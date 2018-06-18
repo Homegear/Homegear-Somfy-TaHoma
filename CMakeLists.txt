@@ -4,6 +4,8 @@ project(homegear_somfy_tahoma)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
+        src/Api.cpp
+        src/Api.h
         src/DescriptionCreator.cpp
         src/DescriptionCreator.h
         src/Factory.cpp
