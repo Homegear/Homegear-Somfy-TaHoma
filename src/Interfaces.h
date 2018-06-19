@@ -44,6 +44,9 @@ public:
 	Interfaces(BaseLib::SharedObjects* bl, std::map<std::string, Systems::PPhysicalInterfaceSettings> physicalInterfaceSettings);
 	virtual ~Interfaces();
 
+    void startListening() override;
+    void stopListening() override;
+
     void addEventHandlers(BaseLib::Systems::IPhysicalInterface::IPhysicalInterfaceEventSink* central);
     void removeEventHandlers();
     std::shared_ptr<Tahoma> addInterface(Systems::PPhysicalInterfaceSettings settings, bool storeInDatabase);
@@ -53,6 +56,7 @@ public:
 	std::shared_ptr<Tahoma> getInterfaceByUuid(std::string& uuid);
     std::vector<std::shared_ptr<Tahoma>> getInterfaces();
 protected:
+	std::shared_ptr<Api> _api;
     std::shared_ptr<Tahoma> _defaultPhysicalInterface;
     std::map<std::string, PEventHandler> _physicalInterfaceEventhandlers;
 

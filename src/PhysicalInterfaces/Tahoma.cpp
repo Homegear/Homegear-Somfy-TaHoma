@@ -34,7 +34,7 @@
 namespace MyFamily
 {
 
-Tahoma::Tahoma(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings) : IPhysicalInterface(GD::bl, GD::family->getFamily(), settings)
+Tahoma::Tahoma(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings, std::shared_ptr<Api> api) : IPhysicalInterface(GD::bl, GD::family->getFamily(), settings)
 {
     if(settings->listenThreadPriority == -1)
     {
@@ -54,7 +54,7 @@ Tahoma::Tahoma(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> sett
         return;
     }
 
-    _httpClient = std::unique_ptr<BaseLib::HttpClient>(new HttpClient(_bl, _hostname, 8181, false, false));
+    _api = std::move(api);
 }
 
 Tahoma::~Tahoma()

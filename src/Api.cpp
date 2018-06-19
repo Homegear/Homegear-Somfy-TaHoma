@@ -45,10 +45,102 @@ Api::Api()
     _jsonDecoder = std::unique_ptr<BaseLib::Rpc::JsonDecoder>(new BaseLib::Rpc::JsonDecoder(GD::bl));
 
     _loggedIn = false;
+    _stopWorkerThread = false;
 }
 
 Api::~Api()
 {
+    stop();
+}
+
+void Api::start()
+{
+    try
+    {
+        _stopWorkerThread = false;
+        GD::bl->threadManager.start(_workerThread, true, &Api::worker, this);
+    }
+    catch(const std::exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
+void Api::stop()
+{
+    try
+    {
+        _stopWorkerThread = true;
+        GD::bl->threadManager.join(_workerThread);
+    }
+    catch(const std::exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
+void Api::worker()
+{
+    while(!_stopWorkerThread)
+    {
+        try
+        {
+            for(int32_t i = 0; i < 60; i++)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                if(_stopWorkerThread) break;
+            }
+
+            login();
+
+            std::string getRequest = "GET " + _path + "getSetup HTTP/1.1\r\nUser-Agent: Homegear\r\nHost: www.tahomalink.com:" + std::to_string(443) + "\r\nConnection: Close\r\nCookie: " + _cookie + "\r\n\r\n";
+            BaseLib::Http result;
+            _httpClient->sendRequest(getRequest, result);
+
+            auto resultJson = _jsonDecoder->decode(result.getContent());
+
+            if(result.getHeader().responseCode >= 400 && result.getHeader().responseCode <= 499)
+            {
+                auto jsonIterator = resultJson->structValue->find("error");
+                if(jsonIterator != resultJson->structValue->end()) GD::out.printError("Error getting setup: " + jsonIterator->second->stringValue);
+                else GD::out.printError("Error getting setup: Unknown error");
+
+                _loggedIn = false;
+            }
+            else
+            {
+                resultJson->print(true, true);
+            }
+        }
+        catch(const std::exception& ex)
+        {
+            _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+        }
+        catch(BaseLib::Exception& ex)
+        {
+            _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+        }
+        catch(...)
+        {
+            _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+        }
+    }
 }
 
 bool Api::login()
@@ -58,14 +150,16 @@ bool Api::login()
         std::lock_guard<std::mutex> loginGuard(_loginMutex);
         if(_loggedIn) return true;
 
-        auto setting = GD::family->getFamilySetting("user");
+        std::string settingName = "user";
+        auto setting = GD::family->getFamilySetting(settingName);
         if(!setting || setting->stringValue.empty())
         {
             _out.printError("Error: Setting \"user\" not specified in \"somfytahoma.conf\".");
             return false;
         }
         std::string user = BaseLib::HelperFunctions::stringReplace(setting->stringValue, "\"", "\\\"");
-        setting = GD::family->getFamilySetting("password");
+        settingName = "password";
+        setting = GD::family->getFamilySetting(settingName);
         if(!setting || setting->stringValue.empty())
         {
             _out.printError("Error: Setting \"password\" not specified in \"somfytahoma.conf\".");

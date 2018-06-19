@@ -44,11 +44,16 @@ public:
     Api();
     virtual ~Api();
 
+    void start();
+    void stop();
 private:
     BaseLib::Output _out;
     std::unique_ptr<BaseLib::HttpClient> _httpClient;
     std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
     std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
+
+    std::atomic_bool _stopWorkerThread;
+    std::thread _workerThread;
 
     const std::string _path = "/enduser-mobile-web/externalAPI/json/";
     std::mutex _loginMutex;
@@ -56,6 +61,7 @@ private:
     std::string _cookie;
 
     bool login();
+    void worker();
 };
 
 }
