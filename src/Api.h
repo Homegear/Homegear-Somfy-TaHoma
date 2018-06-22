@@ -27,40 +27,41 @@
  * files in the program, then also delete it here.
  */
 
-#ifndef INTERFACES_H_
-#define INTERFACES_H_
+#ifndef TAHOMA_API_H
+#define TAHOMA_API_H
 
-#include <homegear-base/BaseLib.h>
-#include "PhysicalInterfaces/Tahoma.h"
+#include <homegear-base/Sockets/HttpClient.h>
+#include <homegear-base/Output/Output.h>
+#include <homegear-base/Encoding/JsonEncoder.h>
+#include <homegear-base/Encoding/JsonDecoder.h>
 
 namespace MyFamily
 {
 
-using namespace BaseLib;
-
-class Interfaces : public BaseLib::Systems::PhysicalInterfaces
+class Api
 {
 public:
-	Interfaces(BaseLib::SharedObjects* bl, std::map<std::string, Systems::PPhysicalInterfaceSettings> physicalInterfaceSettings);
-	virtual ~Interfaces();
+    Api();
+    virtual ~Api();
 
-    void startListening() override;
-    void stopListening() override;
+    void start();
+    void stop();
+private:
+    BaseLib::Output _out;
+    std::unique_ptr<BaseLib::HttpClient> _httpClient;
+    std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
+    std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
 
-    void addEventHandlers(BaseLib::Systems::IPhysicalInterface::IPhysicalInterfaceEventSink* central);
-    void removeEventHandlers();
-    std::shared_ptr<Tahoma> addInterface(Systems::PPhysicalInterfaceSettings settings, bool storeInDatabase);
-    void removeUnknownInterfaces(std::set<std::string>& knownInterfaces);
-    std::shared_ptr<Tahoma> getDefaultInterface();
-    std::shared_ptr<Tahoma> getInterface(std::string& name);
-	std::shared_ptr<Tahoma> getInterfaceByUuid(std::string& uuid);
-    std::vector<std::shared_ptr<Tahoma>> getInterfaces();
-protected:
-	std::shared_ptr<Api> _api;
-    std::shared_ptr<Tahoma> _defaultPhysicalInterface;
-    std::map<std::string, PEventHandler> _physicalInterfaceEventhandlers;
+    std::atomic_bool _stopWorkerThread;
+    std::thread _workerThread;
 
-	virtual void create();
+    const std::string _path = "/enduser-mobile-web/externalAPI/json/";
+    std::mutex _loginMutex;
+    std::atomic_bool _loggedIn;
+    std::string _cookie;
+
+    bool login();
+    void worker();
 };
 
 }

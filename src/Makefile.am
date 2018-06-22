@@ -6,7 +6,7 @@ LIBS += -Wl,-Bdynamic
 
 libdir = $(localstatedir)/lib/homegear/modules
 lib_LTLIBRARIES = mod_somfy_tahoma.la
-mod_somfy_tahoma_la_SOURCES = DescriptionCreator.cpp MyFamily.cpp MyPacket.cpp MyPeer.cpp Factory.cpp GD.cpp MyCentral.cpp Interfaces.cpp PhysicalInterfaces/Tahoma.cpp
+mod_somfy_tahoma_la_SOURCES = Api.cpp DescriptionCreator.cpp MyFamily.cpp MyPacket.cpp MyPeer.cpp Factory.cpp GD.cpp MyCentral.cpp Interfaces.cpp PhysicalInterfaces/Tahoma.cpp
 mod_somfy_tahoma_la_LDFLAGS =-module -avoid-version -shared
 install-exec-hook:
 	rm -f $(DESTDIR)$(libdir)/mod_somfy_tahoma.la
