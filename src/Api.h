@@ -27,31 +27,41 @@
  * files in the program, then also delete it here.
  */
 
-#ifndef GD_H_
-#define GD_H_
+#ifndef TAHOMA_API_H
+#define TAHOMA_API_H
 
-#define MY_FAMILY_ID 25
-#define MY_FAMILY_NAME "Somfy TaHoma"
-
-#include <homegear-base/BaseLib.h>
-#include "MyFamily.h"
-#include "PhysicalInterfaces/Tahoma.h"
-#include "Interfaces.h"
+#include <homegear-base/Sockets/HttpClient.h>
+#include <homegear-base/Output/Output.h>
+#include <homegear-base/Encoding/JsonEncoder.h>
+#include <homegear-base/Encoding/JsonDecoder.h>
 
 namespace MyFamily
 {
 
-class GD
+class Api
 {
 public:
-	virtual ~GD();
+    Api();
+    virtual ~Api();
 
-	static BaseLib::SharedObjects* bl;
-	static MyFamily* family;
-	static std::shared_ptr<Interfaces> interfaces;
-	static BaseLib::Output out;
+    void start();
+    void stop();
 private:
-	GD();
+    BaseLib::Output _out;
+    std::unique_ptr<BaseLib::HttpClient> _httpClient;
+    std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
+    std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
+
+    std::atomic_bool _stopWorkerThread;
+    std::thread _workerThread;
+
+    const std::string _path = "/enduser-mobile-web/externalAPI/json/";
+    std::mutex _loginMutex;
+    std::atomic_bool _loggedIn;
+    std::string _cookie;
+
+    bool login();
+    void worker();
 };
 
 }

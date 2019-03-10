@@ -1,4 +1,4 @@
-/* Copyright 2013-2017 Sathya Laufer
+/* Copyright 2013-2019 Homegear GmbH
  *
  * Homegear is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ namespace MyFamily
 
 Interfaces::Interfaces(BaseLib::SharedObjects* bl, std::map<std::string, Systems::PPhysicalInterfaceSettings> physicalInterfaceSettings) : Systems::PhysicalInterfaces(bl, GD::family->getFamily(), physicalInterfaceSettings)
 {
+    _api = std::make_shared<Api>();
 	create();
 }
 
@@ -202,7 +203,7 @@ std::shared_ptr<Tahoma> Interfaces::addInterface(Systems::PPhysicalInterfaceSett
 
         if(settings->type == "tahoma" || settings->type == "tahoma-auto")
         {
-            device = std::make_shared<Tahoma>(settings);
+            device = std::make_shared<Tahoma>(settings, _api);
         }
         else GD::out.printError("Error: Unsupported physical device type: " + settings->type);
         if(device)
@@ -247,8 +248,50 @@ void Interfaces::create()
         {
             Systems::PPhysicalInterfaceSettings settings = std::make_shared<Systems::PhysicalInterfaceSettings>();
             settings->type = "tahoma-temp";
-            _defaultPhysicalInterface = std::make_shared<Tahoma>(settings);
+            _defaultPhysicalInterface = std::make_shared<Tahoma>(settings, _api);
         }
+    }
+    catch(const std::exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
+void Interfaces::startListening()
+{
+    try
+    {
+        _api->start();
+        PhysicalInterfaces::startListening();
+    }
+    catch(const std::exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
+void Interfaces::stopListening()
+{
+    try
+    {
+        PhysicalInterfaces::stopListening();
+        _api->stop();
     }
     catch(const std::exception& ex)
     {

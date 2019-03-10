@@ -1,4 +1,4 @@
-/* Copyright 2013-2017 Sathya Laufer
+/* Copyright 2013-2019 Homegear GmbH
  *
  * Homegear is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #ifndef TAHOMA_H
 #define TAHOMA_H
 
+#include "../Api.h"
 #include <homegear-base/Systems/IPhysicalInterface.h>
 #include <homegear-base/Sockets/HttpClient.h>
 
@@ -39,7 +40,7 @@ namespace MyFamily
 class Tahoma : public BaseLib::Systems::IPhysicalInterface
 {
 public:
-    Tahoma(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings);
+    Tahoma(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings, std::shared_ptr<Api> api);
     virtual ~Tahoma();
 
     void startListening();
@@ -50,7 +51,7 @@ public:
     std::string getUuid() { return _settings->uuid; }
 private:
     BaseLib::Output _out;
-    std::unique_ptr<BaseLib::HttpClient> _httpClient;
+    std::shared_ptr<Api> _api;
 };
 
 }
