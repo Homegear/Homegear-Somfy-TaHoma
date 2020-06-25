@@ -332,7 +332,7 @@ std::string MyCentral::handleCliCommand(std::string command)
                 return stringStream.str();
             }
 
-            searchDevices(nullptr);
+            searchDevices(nullptr, "");
 
             stringStream << "Search completed." << std::endl;
             return stringStream.str();
@@ -667,7 +667,7 @@ PVariable MyCentral::deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64_t p
     return Variable::createError(-32500, "Unknown application error.");
 }
 
-PVariable MyCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
+PVariable MyCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const std::string& interfaceId)
 {
 	try
 	{
