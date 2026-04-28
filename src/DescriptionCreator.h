@@ -3,6 +3,8 @@
 #ifndef HOMEGEAR_TAHOMA_DESCRIPTIONCREATOR_H
 #define HOMEGEAR_TAHOMA_DESCRIPTIONCREATOR_H
 
+#include <cstdint>
+
 #include <homegear-base/BaseLib.h>
 #include "MyPacket.h"
 #include "PhysicalInterfaces/Tahoma.h"
